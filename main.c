@@ -1,9 +1,12 @@
 /*
-TODO:
+TODO: 
 
-1. get busyflag working for lcd so it doesnt have to rely on delay
-2. work out errors eg no x+ on lcd
+1. Fix multiple operators errors eg: +/
+    1-1. Add cursor shift backwards command
 
+2. Figure out what happens after = 
+
+3. correct spacings on lcd
 */
 
 #include <stdint.h>
@@ -32,80 +35,34 @@ void GPIO_init(){
 
 
 int main(){
-    I2C1_init();
+    I2C1_init(system_frequency);
     GPIO_init();
-    LCD_4bit_init();
-    // clear lcd with (delay very important)
-    lcd_send_cmd(0b00000001);
-    delay_SysTick(2);
+    I2C_LCD my_LCD = LCD_4bit_init(0x3F, system_frequency);
+    lcd_clear(&my_LCD);
+    lcd_cursor_home(&my_LCD);
 
-    uint16_t num_input_pins = 1|(1<<1)|(1<<10)|(1<<11)|(1<<4)|(1<<5)|(1<<6)|(1<<7)|(1<<8)|(1<<9);
-    uint16_t op_input_pins = 1|(1<<1)|(1<<2)|(1<<3)|(1<<4);
+    //index is value eg: [2] is value 2 but pin 10
+    uint8_t num_input_pins[10] = {0,1,10,11,4,5,6,7,8,9};//GPIOA
+
+    // pin index should match operator index
+    uint8_t operator_input_pins[5] = {0,1,2,3,4};//GPIOB
+    char operators[5] = {'+','-','*','/','='};
 
     char* equation_str = calloc(50, sizeof(char));
 
     while(1){
         
-        //switch statement that checks for num presses
-        switch(GPIOA_IDR & num_input_pins){
-            case (1<<0):
-                num_pressed(0, equation_str);
-                break;
-            case (1<<1):
-                num_pressed(1, equation_str);
-                break;
-            case (1<<10):
-                num_pressed(2, equation_str);
-                break;
-            case (1<<11):
-                num_pressed(3, equation_str);
-                break;
-            case (1<<4):
-                num_pressed(4, equation_str);
-                break;
-            case (1<<5):
-                num_pressed(5, equation_str);
-                break;
-            case (1<<6):
-                num_pressed(6, equation_str);
-                break;
-            case (1<<7):
-                num_pressed(7, equation_str);
-                break;
-            case (1<<8):
-                num_pressed(8, equation_str);
-                break;
-            case (1<<9):
-                num_pressed(9, equation_str);
-                break;
-            default:
-                break;
+        for(int i = 0; i<10; i++){
+            if(GPIOA_IDR & (1<<num_input_pins[i])){
+                num_pressed(&my_LCD, i, equation_str);
+            }
         }
-        
-        //switch statement for operators
-        switch (GPIOB_IDR & op_input_pins){
-            case (1<<0):
-                operator_pressed('+', equation_str);
-                break;
-            case (1<<1):
-                operator_pressed('-', equation_str);
-                break;
-            case (1<<2):
-                operator_pressed('*', equation_str);
-                break;
-            case (1<<3):
-                operator_pressed('/', equation_str);
-                break;
-            case (1<<4):
-                operator_pressed('=', equation_str);
 
-                double answer = str_to_ans(equation_str);
-                lcd_print_double(answer);
-                break;
-            default:
-                break;
-        }
-        
+        for(int i = 0; i<sizeof(operators); i++){
+            if(GPIOB_IDR & (1<<operator_input_pins[i])){
+                operator_pressed(&my_LCD, operators[i], equation_str);
+            }
+        }   
     }
     return 0;
 }

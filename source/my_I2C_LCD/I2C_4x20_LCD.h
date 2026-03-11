@@ -3,11 +3,17 @@
 
     #include <stdint.h>
 
-    void I2C1_init();
-    void lcd_send_cmd(uint8_t cmd);
-    void lcd_send_data(uint8_t data);
-    void LCD_4bit_init();
-    void lcd_print_string(char* str);
-    void lcd_print_double(double num_in);
+    struct I2C_LCD{
+    uint8_t address;
+    uint32_t sys_freq;
+    }typedef I2C_LCD;
+
+    void I2C1_init(uint32_t APB1_freq);
+    I2C_LCD LCD_4bit_init(uint8_t address, uint64_t sys_freq);
+    void lcd_print_char(I2C_LCD* lcd, char letter);
+    void lcd_print_string(I2C_LCD* lcd, char* str);
+    void lcd_print_double(I2C_LCD* lcd, double num_in);
+    void lcd_clear(I2C_LCD* lcd);
+    void lcd_cursor_home(I2C_LCD* lcd);
 
 #endif

@@ -4,8 +4,7 @@
     #include <stdint.h>
     #include "source/my_I2C_LCD/I2C_4x20_LCD.h"
 
-    //* make sure this is updated
-    #define sys_freq 16000000
+    #define system_frequency 16000000
 
     #define RCC_Base 0x40023800
     #define RCC_AHB1ENR *((volatile uint32_t*)(RCC_Base + 0x30))
@@ -36,11 +35,11 @@
     #define I2C1_DR *((volatile uint32_t*)(I2C1_Base + 0x10))
 
     //defined in delay.c
-    void delay_SysTick(uint32_t delay_ms);
+    void delay_SysTick(uint32_t delay_ms, uint32_t sys_freq);
     
     // calc functions
     void input_to_str(char input, char* eq_str);
-    void num_pressed(uint8_t input_num, char* eq_str);
-    void operator_pressed(char op, char* eq_str);
+    void num_pressed(I2C_LCD* lcd, uint8_t input_num, char* eq_str);
+    void operator_pressed(I2C_LCD* lcd, char op, char* eq_str);
     double str_to_ans(char* eq_str);
 #endif

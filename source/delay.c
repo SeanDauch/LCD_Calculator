@@ -2,7 +2,7 @@
 #include "../main.h"
 
 // simple delay function in ms
-void delay_SysTick(uint32_t delay_ms){
+void delay_SysTick(uint32_t delay_ms, uint32_t sys_freq){
     // SysTick Reload Value Register (specifies value to count down from)
     volatile uint32_t* pSYST_RVR = (volatile uint32_t*)(0xE000E014);
     // beats every 1 ms
