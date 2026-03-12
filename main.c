@@ -1,12 +1,11 @@
 /*
 TODO: 
 
-1. Fix multiple operators errors eg: +/
-    1-1. Add cursor shift backwards command
+1. Figure out how to do another eqaution after, ans?
 
-2. Figure out what happens after = 
+2. clear rows after doubling back to start?
 
-3. correct spacings on lcd
+3. add parentheis and exponents?
 */
 
 #include <stdint.h>
@@ -37,9 +36,9 @@ void GPIO_init(){
 int main(){
     I2C1_init(system_frequency);
     GPIO_init();
-    I2C_LCD my_LCD = LCD_4bit_init(0x3F, system_frequency);
+    I2C_LCD my_LCD = LCD_4bit_init(0x3F, system_frequency, 4, 20);
     lcd_clear(&my_LCD);
-    lcd_cursor_home(&my_LCD);
+    lcd_set_cursor(&my_LCD);
 
     //index is value eg: [2] is value 2 but pin 10
     uint8_t num_input_pins[10] = {0,1,10,11,4,5,6,7,8,9};//GPIOA

@@ -1,5 +1,4 @@
 #include "I2C_4x20_LCD.h"
-#include <stdio.h> // need for snprintf
 
 // busyflag doesnt work with I2C backpack
 
@@ -218,7 +217,7 @@ static void lcd_send_data(uint8_t address, uint8_t data){
 }
 
 // based off psudeocode found in random datasheet
-I2C_LCD LCD_4bit_init(uint8_t address, uint64_t sys_freq){
+I2C_LCD LCD_4bit_init(uint8_t address, uint64_t sys_freq, uint8_t num_rows, uint8_t num_cols){
     delay_SysTick(50, sys_freq);
     nybble(address, 0x30, 0);
     delay_SysTick(10, sys_freq);
@@ -236,13 +235,15 @@ I2C_LCD LCD_4bit_init(uint8_t address, uint64_t sys_freq){
     lcd_send_cmd(address, 0x0F);
     lcd_send_cmd(address, 0x06);
 
-    I2C_LCD lcd = {address, sys_freq};
+    I2C_LCD lcd = {address, sys_freq, num_rows, num_cols, 0, 0};
     return lcd;
 }
 
 void lcd_print_char(I2C_LCD* lcd, char letter){
     lcd_send_data(lcd-> address, (int)letter);
     delay_SysTick(1, lcd->sys_freq);
+    lcd->current_col++;
+    lcd_set_cursor(lcd);
 }
 
 void lcd_print_string(I2C_LCD* lcd, char* str){
@@ -251,18 +252,67 @@ void lcd_print_string(I2C_LCD* lcd, char* str){
     }
 }
 
-void lcd_print_double(I2C_LCD* lcd, double num_in){
+/*void lcd_print_double(I2C_LCD* lcd, double num_in){
     char buffer[20];
     snprintf(buffer, sizeof(buffer), "%.3g", num_in);
     lcd_print_string(lcd, buffer);
-}
+}*/
 
 void lcd_clear(I2C_LCD* lcd){
     lcd_send_cmd(lcd->address, 0b00000001);
     delay_SysTick(2, lcd->sys_freq);
 }
 
-void lcd_cursor_home(I2C_LCD* lcd){
+/*void lcd_cursor_home(I2C_LCD* lcd){
     lcd_send_cmd(lcd->address, 0b00000011);
     delay_SysTick(2, lcd->sys_freq);
+}*/
+
+/*void lcd_cursor_left(I2C_LCD* lcd){
+    lcd_send_cmd(lcd->address, 0b00010011);
+    delay_SysTick(1, lcd->sys_freq);
+}*/
+
+void lcd_set_cursor(I2C_LCD* lcd){
+
+    // make sure that current coordinates are within bounds
+    while(lcd->current_col > (lcd->num_cols - 1)){
+        lcd->current_col -= lcd->num_cols;
+        lcd->current_row++;
+    }
+    while(lcd->current_col < 0){
+        lcd->current_col += lcd->num_cols;
+        lcd->current_row--;
+    }
+
+    while(lcd->current_row > (lcd->num_rows - 1)){
+        lcd->current_row -= lcd->num_rows;
+    }
+    while(lcd->current_row < 0){
+        lcd->current_row += lcd->num_rows;
+    }
+
+    uint8_t DDRAM_address = 0b10000000;
+    switch(lcd->current_row){
+        case 0:
+        DDRAM_address += (0x00 + lcd->current_col);
+        break;
+
+        case 1:
+        DDRAM_address += (0x40 + lcd->current_col);
+        break;
+
+        case 2:
+        DDRAM_address += (0x14 + lcd->current_col);
+        break;
+
+        case 3:
+        DDRAM_address += (0x54 + lcd->current_col);
+        break;
+
+        default:
+        return;
+    }
+
+    lcd_send_cmd(lcd->address, DDRAM_address);
 }
