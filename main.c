@@ -1,13 +1,3 @@
-/*
-TODO: 
-
-1. Figure out how to do another eqaution after, ans?
-
-2. clear rows after doubling back to start?
-
-3. add parentheis and exponents?
-*/
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
@@ -44,10 +34,10 @@ int main(){
     uint8_t num_input_pins[10] = {0,1,10,11,4,5,6,7,8,9};//GPIOA
 
     // pin index should match operator index
-    uint8_t operator_input_pins[5] = {0,1,2,3,4};//GPIOB
-    char operators[5] = {'+','-','*','/','='};
+    uint8_t operator_input_pins[6] = {0,1,2,3,4,5};//GPIOB
+    char operators[6] = {'+','-','*','/','=','^'};
 
-    char* equation_str = calloc(50, sizeof(char));
+    char* equation_str = calloc(arr_length, sizeof(char));
 
     while(1){
         

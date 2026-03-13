@@ -5,6 +5,7 @@
     #include "source/my_I2C_LCD/I2C_4x20_LCD.h"
 
     #define system_frequency 16000000
+    #define arr_length 25
 
     #define RCC_Base 0x40023800
     #define RCC_AHB1ENR *((volatile uint32_t*)(RCC_Base + 0x30))

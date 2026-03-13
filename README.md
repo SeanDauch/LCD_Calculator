@@ -2,4 +2,8 @@
 
 Using stm32F446RE
 
-lots of work to do
+TO DO:
+
+1. Add answer button, backspace ,and deciaml
+
+2. clear rows after doubling back to start?

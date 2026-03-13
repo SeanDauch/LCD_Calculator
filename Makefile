@@ -51,6 +51,7 @@ CFLAGS = $(MCU_SPEC) -g -Wall -O0 --specs=nosys.specs
 # Linker Flags
 #    -T:              Use our specific Linker Script
 #    -Wl,-Map=...:    Generate a .map file (shows memory usage)
+LIBS = -lm
 LDFLAGS = $(MCU_SPEC) -T$(LDSCRIPT) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map --specs=nosys.specs
 
 ################################################################################
@@ -86,7 +87,7 @@ $(BUILD_DIR)/%.o: %.s | $(BUILD_DIR)
 #    $^ = All dependency files (all the .o files)
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS)
 	@echo "Linking..."
-	$(CC) $(LDFLAGS) $^ -o $@
+	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS)
 	@echo "Build finished. Size:"
 	@$(SIZE) $@
 
