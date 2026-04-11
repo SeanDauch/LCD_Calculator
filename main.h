@@ -42,5 +42,4 @@
     void input_to_str(char input, char* eq_str);
     void num_pressed(I2C_LCD* lcd, uint8_t input_num, char* eq_str);
     void operator_pressed(I2C_LCD* lcd, char op, char* eq_str);
-    double str_to_ans(char* eq_str);
 #endif

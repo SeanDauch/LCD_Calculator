@@ -292,6 +292,7 @@ void lcd_set_cursor(I2C_LCD* lcd){
         lcd->current_row += lcd->num_rows;
     }
 
+    //makes sure code current_row = physical current row
     uint8_t DDRAM_address = 0b10000000;
     switch(lcd->current_row){
         case 0:

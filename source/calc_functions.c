@@ -18,54 +18,23 @@ void input_to_str(char input, char* eq_str){
     }
 }
 
+char last_char_of_str(char* str){
+    char last_char = '\0';
+
+    for(int i = 0; str[i] != '\0'; i++){
+        last_char = str[i];
+    }
+
+    return last_char;
+}
+
 // returns index of the last char
 int length_of_str(char* str){
     int32_t length = -1;
     for(int i = 0; str[i]!= '\0'; i++){
         length++;
     }
-    return (0>length) ? 0 : length; // returns the greater number
-}
-
-// runs through checklist after a number is pressed
-void num_pressed(I2C_LCD* lcd, uint8_t input_num, char* eq_str){
-    input_to_str((char)(input_num + 48), eq_str);// (input_num + 48) is for ascii
-    
-    lcd_print_char(lcd, (char)(input_num + 48));
-
-    delay_SysTick(400, lcd->sys_freq);
-}
-
-// runs through checklist after an operator is pressed
-void operator_pressed(I2C_LCD* lcd, char op, char* eq_str){
-    
-    char last_char = eq_str[length_of_str(eq_str)];
-    if((last_char<'0' || last_char>'9') && last_char != '\0'){
-        eq_str[length_of_str(eq_str)] = '\0';
-
-        lcd->current_col--;
-        lcd_set_cursor(lcd);
-    }
-
-    input_to_str(op, eq_str);
-
-    lcd_print_char(lcd, op);
-
-    if(op == '='){
-        char ans_str[20];
-        snprintf(ans_str, sizeof(ans_str), "%.3g", str_to_ans(eq_str));
-
-        // set location for answer
-        lcd->current_row++;
-        lcd->current_col = lcd->num_cols - (length_of_str(ans_str)+1);
-        lcd_set_cursor(lcd);
-
-        lcd_print_string(lcd, ans_str);
-        
-        free(eq_str);
-        eq_str = calloc(arr_length, sizeof(char));
-    }
-    delay_SysTick(400, lcd->sys_freq);
+    return length; // returns the greater number
 }
 
 // takes master equation string and solves it
@@ -177,4 +146,72 @@ double str_to_ans(char* eq_str){
     free(operator_index);
 
     return answer;
+}
+
+void backspace(I2C_LCD* lcd, char* eq_str){
+
+    // no backspace if so str
+    if(last_char_of_str(eq_str) != '\0'){
+        eq_str[length_of_str(eq_str)] = '\0'; // sets last char in str to null
+
+        // clear lcd char
+        lcd->current_col -= 1;
+        lcd_set_cursor(lcd);
+        lcd_print_char(lcd, ' ');
+
+        // set cursor back one to counteract after printing
+        lcd->current_col -= 1;
+        lcd_set_cursor(lcd);
+    }
+}
+
+// runs through checklist after a number is pressed
+void num_pressed(I2C_LCD* lcd, uint8_t input_num, char* eq_str){
+    input_to_str((char)(input_num + 48), eq_str);// (input_num + 48) is for ascii
+    
+    lcd_print_char(lcd, (char)(input_num + 48));
+
+    delay_SysTick(400, lcd->sys_freq);
+}
+
+// runs through checklist after an operator is pressed
+void operator_pressed(I2C_LCD* lcd, char op, char* eq_str){
+    
+    if(op == '<'){
+        backspace(lcd, eq_str);
+        delay_SysTick(400, lcd->sys_freq);
+        return;
+    }
+
+    // avoids double operators
+    char last_char = last_char_of_str(eq_str);
+    if((last_char<'0' || last_char>'9') && last_char != '\0'){
+        eq_str[length_of_str(eq_str)] = '\0';
+
+        lcd->current_col--;
+        lcd_set_cursor(lcd);
+    }
+
+    input_to_str(op, eq_str);
+
+    lcd_print_char(lcd, op);
+
+    if(op == '='){
+
+        // calculate ans
+        char ans_str[20];
+        snprintf(ans_str, sizeof(ans_str), "%.3g", str_to_ans(eq_str));
+
+        // set location for answer
+        lcd->current_row++;
+        lcd->current_col = lcd->num_cols - (length_of_str(ans_str)+1);
+        lcd_set_cursor(lcd);
+
+        lcd_print_string(lcd, ans_str);
+        
+        // clear eq_str
+        free(eq_str);
+        eq_str = calloc(arr_length, sizeof(char));
+    }
+    delay_SysTick(400, lcd->sys_freq);
 }

@@ -11,15 +11,15 @@ void GPIO_init(){
 
     // make sure inputs
     GPIOA_MODER &= ~(3|(3<<2)|(3<<20)|(3<<22)|(3<<8)|(3<<10)|(3<<12)|(3<<14)|(3<<16)|(3<<18));
-    GPIOB_MODER &= ~(3|(3<<2)|(3<<4)|(3<<6)|(3<<8));
+    GPIOB_MODER &= ~(3|(3<<2)|(3<<4)|(3<<6)|(3<<8)|(3<<10)|(3<<12));
 
     // set num pins to pulldown
     GPIOA_PUPDR &= ~(3|(3<<2)|(3<<20)|(3<<22)|(3<<8)|(3<<10)|(3<<12)|(3<<14)|(3<<16)|(3<<18));
     GPIOA_PUPDR |= 2|(2<<2)|(2<<20)|(2<<22)|(2<<8)|(2<<10)|(2<<12)|(2<<14)|(2<<16)|(2<<18);
 
     //set operator pins to pull down
-    GPIOB_PUPDR &= ~(3|(3<<2)|(3<<4)|(3<<6)|(3<<8));
-    GPIOB_PUPDR |= 2|(2<<2)|(2<<4)|(2<<6)|(2<<8);
+    GPIOB_PUPDR &= ~(3|(3<<2)|(3<<4)|(3<<6)|(3<<8)|(3<<10)|(3<<12));
+    GPIOB_PUPDR |= 2|(2<<2)|(2<<4)|(2<<6)|(2<<8)|(2<<10)|(2<<12);
 }
 
 
@@ -34,8 +34,8 @@ int main(){
     uint8_t num_input_pins[10] = {0,1,10,11,4,5,6,7,8,9};//GPIOA
 
     // pin index should match operator index
-    uint8_t operator_input_pins[6] = {0,1,2,3,4,5};//GPIOB
-    char operators[6] = {'+','-','*','/','=','^'};
+    uint8_t operator_input_pins[7] = {0,1,2,3,4,5,6};//GPIOB
+    char operators[7] = {'+','-','*','/','=','^','<'};
 
     char* equation_str = calloc(arr_length, sizeof(char));
 
