@@ -51,16 +51,31 @@ double str_to_ans(char* eq_str){
     uint8_t after_decimal = 0; // tells program to start counting places after decimal
     uint8_t places_after_decimal = 0;
 
+    uint8_t negative = 0; // tells program that its a negative
+
     for(int i = 0; eq_str[i] != '\0'; i++){
+
         if(eq_str[i] == '.'){
             after_decimal = 1;
 
+        }else if(eq_str[i] == '-' && (i == 0 || (eq_str[i-1]<'0' || eq_str[i-1]>'9'))){
+            negative = 1;
+
         }else if(eq_str[i]<'0' || eq_str[i]>'9'){
+
+            if(negative == 1){
+                numbers[j] *= -1;
+
+                negative = 0;
+            }
+
             operator_index[j] = i;
             j++;
 
             after_decimal = 0;
             places_after_decimal = 0;
+
+            
 
         }else{
             double addend = ((int) eq_str[i]) - 48;
@@ -206,13 +221,17 @@ void operator_pressed(I2C_LCD* lcd, char op, char* eq_str){
         return;
     }
 
+    
     // avoids double operators
     char last_char = last_char_of_str(eq_str);
     if((last_char<'0' || last_char>'9') && last_char != '\0'){
-        eq_str[length_of_str(eq_str)] = '\0';
 
-        lcd->current_col--;
-        lcd_set_cursor(lcd);
+        if(op != '-'){ // exception for '-'
+            eq_str[length_of_str(eq_str)] = '\0';
+
+            lcd->current_col--;
+            lcd_set_cursor(lcd);
+        }
     }
 
     input_to_str(op, eq_str);
