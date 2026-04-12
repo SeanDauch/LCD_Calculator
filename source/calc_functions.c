@@ -48,12 +48,35 @@ double str_to_ans(char* eq_str){
 
     // put all elements into an array
     //* goes number operator number ...
+    uint8_t after_decimal = 0; // tells program to start counting places after decimal
+    uint8_t places_after_decimal = 0;
+
     for(int i = 0; eq_str[i] != '\0'; i++){
-        if(eq_str[i]<'0' || eq_str[i]>'9'){
+        if(eq_str[i] == '.'){
+            after_decimal = 1;
+
+        }else if(eq_str[i]<'0' || eq_str[i]>'9'){
             operator_index[j] = i;
             j++;
+
+            after_decimal = 0;
+            places_after_decimal = 0;
+
         }else{
-            numbers[j] = (numbers[j] * 10) + ((int) eq_str[i]) - 48;
+            double addend = ((int) eq_str[i]) - 48;
+
+            if(after_decimal == 1){
+                places_after_decimal += 1;
+
+                addend /= (10 * places_after_decimal);
+
+                numbers[j] = numbers[j] + addend;
+
+            }else{
+                numbers[j] = (numbers[j] * 10) + addend;
+            }
+
+            
         }
     }
 
