@@ -1,4 +1,5 @@
 #include "I2C_4x20_LCD.h"
+#include <stdlib.h> // for buffer
 
 // busyflag doesnt work with I2C backpack
 
@@ -236,12 +237,26 @@ I2C_LCD LCD_4bit_init(uint8_t address, uint64_t sys_freq, uint8_t num_rows, uint
     lcd_send_cmd(address, 0x06);
 
     I2C_LCD lcd = {address, sys_freq, num_rows, num_cols, 0, 0};
+
+    // setting up buffer
+    lcd.buffer = calloc(num_rows, sizeof(char*)); // init rows
+
+    for(int i = 0; i<num_rows; i++){
+        lcd.buffer[i] = calloc(num_cols, sizeof(char)); // init columns
+
+        for(int j = 0; j<num_cols; j++){ // set columns to be ' ' not '\0' to avoid print errors
+            lcd.buffer[i][j] = ' ';
+        }
+    }
+
     return lcd;
 }
 
 void lcd_print_char(I2C_LCD* lcd, char letter){
-    lcd_send_data(lcd-> address, (int)letter);
+    lcd_send_data(lcd-> address, (int)letter); //print data to sceen
     delay_SysTick(1, lcd->sys_freq);
+
+    lcd->buffer[lcd->current_row][lcd->current_col] = letter; // adds char to buffer
     lcd->current_col++;
     lcd_set_cursor(lcd);
 }
@@ -273,6 +288,42 @@ void lcd_clear(I2C_LCD* lcd){
     delay_SysTick(1, lcd->sys_freq);
 }*/
 
+static void print_buffer(I2C_LCD* lcd){
+    lcd_clear(lcd);
+    lcd->current_row = 0;
+    lcd->current_col = 0;
+
+    for(int rows = 0; rows < lcd->num_rows; rows++){
+
+            //make sure that "rows" = physical rows
+            switch (rows){
+                case 0:
+                    lcd_send_cmd(lcd->address, 0b10000000);
+                    break;
+                
+                case 1:
+                    lcd_send_cmd(lcd->address, 0b10000000 + 0x40);
+                    break;
+
+                case 2:
+                    lcd_send_cmd(lcd->address, 0b10000000 + 0x14);
+                    break;
+
+                case 3:
+                    lcd_send_cmd(lcd->address, 0b10000000 + 0x54);
+                    break;
+                
+                default:
+                    break;
+            }
+
+            for(int cols = 0; cols < lcd->num_cols; cols++){
+                lcd_send_data(lcd-> address, (int)lcd->buffer[rows][cols]); //*have to avoid lcd_print_char()
+                delay_SysTick(1, lcd->sys_freq);
+            }
+        }
+}
+
 void lcd_set_cursor(I2C_LCD* lcd){
 
     // make sure that current coordinates are within bounds
@@ -286,7 +337,23 @@ void lcd_set_cursor(I2C_LCD* lcd){
     }
 
     while(lcd->current_row > (lcd->num_rows - 1)){
-        lcd->current_row -= lcd->num_rows;
+        int prev_col = lcd->current_col; // necesary for solving eq that are on bottom
+
+        free(lcd->buffer[0]);
+
+        for(int i = 0; i<(lcd->num_rows - 1); i++){ // Reconfigure buffer
+            lcd->buffer[i] = lcd->buffer[i+1];
+        }
+
+        lcd->buffer[lcd->num_rows - 1] = calloc(lcd->num_cols, sizeof(char)); // clears bottom row
+        for(int j = 0; j<lcd->num_cols; j++){ // set columns to be ' ' not '\0' to avoid print errors
+            lcd->buffer[lcd->num_rows - 1][j] = ' ';
+        }
+
+        print_buffer(lcd);
+
+        lcd->current_row -= 1;
+        lcd->current_col = prev_col;
     }
     while(lcd->current_row < 0){
         lcd->current_row += lcd->num_rows;

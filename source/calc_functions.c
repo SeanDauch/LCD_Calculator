@@ -188,7 +188,7 @@ double str_to_ans(char* eq_str){
 
 void backspace(I2C_LCD* lcd, char* eq_str){
 
-    // no backspace if so str
+    // no backspace if no str
     if(last_char_of_str(eq_str) != '\0'){
         eq_str[length_of_str(eq_str)] = '\0'; // sets last char in str to null
 
@@ -226,7 +226,7 @@ void operator_pressed(I2C_LCD* lcd, char op, char* eq_str){
     char last_char = last_char_of_str(eq_str);
     if((last_char<'0' || last_char>'9') && last_char != '\0'){
 
-        if(op != '-'){ // exception for '-'
+        if(op != '-' && op != '.'){ // exception for '-' and '.'
             eq_str[length_of_str(eq_str)] = '\0';
 
             lcd->current_col--;
@@ -242,7 +242,7 @@ void operator_pressed(I2C_LCD* lcd, char op, char* eq_str){
 
         // calculate ans
         char ans_str[20];
-        snprintf(ans_str, sizeof(ans_str), "%.3g", str_to_ans(eq_str));
+        snprintf(ans_str, sizeof(ans_str), "%.5g", str_to_ans(eq_str));
 
         // set location for answer
         lcd->current_row++;
