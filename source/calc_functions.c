@@ -143,6 +143,18 @@ double str_to_ans(char* eq_str){
 
             current_ops--;
             i--;
+
+        }else if(eq_str[operator_index[i]] == '%'){
+            numbers[i] = (numbers[i]/100) * (numbers[i+1]);
+
+            // shift array down towards 0
+            for(int j = i; j<(current_ops-1); j++){
+                numbers[j+1] = numbers[j+2];
+                operator_index[j] = operator_index[j+1];
+            }
+
+            current_ops--;
+            i--;
         }
         
     }
@@ -242,7 +254,7 @@ void operator_pressed(I2C_LCD* lcd, char op, char* eq_str){
 
         // calculate ans
         char ans_str[20];
-        snprintf(ans_str, sizeof(ans_str), "%.5g", str_to_ans(eq_str));
+        snprintf(ans_str, sizeof(ans_str), "%.13g", str_to_ans(eq_str));
 
         // set location for answer
         lcd->current_row++;
